@@ -1,0 +1,487 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Details</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap" />
+
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .labs-card {
+        background-color: white;
+        padding: 10px; /* Increased padding for more space inside the card */
+        margin-bottom: 10px; /* Increased margin for better spacing between cards */
+        border-radius: 8px; /* Slightly more rounded corners */
+        border: 1px solid #71d4c895; /* Added a colored border */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+        display: flex;
+        flex-direction: column; /* Make the card stack elements vertically */
+        cursor: pointer;
+        position: relative;
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Add a hover effect to make the card pop */
+    .labs-card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* More intense shadow on hover */
+        transform: translateY(-5px); /* Slight lift effect */
+    }
+
+    /* Optional: Adding a subtle background hover effect */
+    .labs-card:hover {
+        background-color: #fafafa;
+    }
+
+
+    .labstatus-select {
+        width: 160px; /* Reduced width for dropdown */
+        padding: 4px; /* Adjust padding */
+    }
+
+    .labchange-status-btn {
+        font-size: 14px; /* Reduced button size */
+        padding: 3px 8px; /* Small button padding */
+    }
+
+
+    .lab-section {
+        margin-top: 15px; /* Space between patient details and lab section */
+        padding-top: 10px; /* Padding for lab section */
+        border-top: 1px solid #ddd; /* Border to separate lab section */
+    }
+
+    .lab-test-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensure space between name and upload section */
+    gap: 10px; /* Space between the items in the row */
+    margin-bottom: 10px;
+    }
+
+    .pdf-upload {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Space between the input and button */
+    }
+
+    .pdf-upload input[type="file"] {
+        width: auto; /* Adjust input width */
+        flex-grow: 1; /* Allow the input to expand if needed */
+    }
+
+    .pdf-upload button {
+        flex-shrink: 0; /* Prevent the button from shrinking */
+        white-space: nowrap; /* Prevent text wrapping in button */
+    }
+
+        /* Responsive behavior for tablet and smaller screens */
+    @media (max-width: 768px) {
+        .lab-test-row {
+            flex-direction: column; /* Stack items vertically */
+            align-items: stretch; /* Make items fill the container */
+        }
+
+        .pdf-upload {
+            flex-direction: column; /* Stack input and button vertically on smaller screens */
+            gap: 5px;
+        }
+
+        .pdf-upload input[type="file"] {
+            width: 100%; /* Make input fill the container on small screens */
+        }
+
+        .pdf-upload button {
+            width: 100%; /* Make button fill the container on small screens */
+        }
+    }
+    .labaction-section {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Reduced gap for better alignment */
+        margin-left: auto; /* Push action section to the right */
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="data-block1">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="navbar-brand1" href="{% url 'allpatient' %}"><i class="fas fa-arrow-left"> </i><span class="navbar-brand1">All Labs</span></a>
+            <span class="doctor-count">Total: {{ labs|length }}</span>
+        </div>
+    </div>
+    {% if labs %} 
+        {% for lab in labs %}
+        <div class="labs-card">
+            
+            <div class="lab-section">
+                <div class="lab-tests">
+                    <div class="lab-test-row">
+                        <span class="lab-test-name">{{ lab.labinvestigation_category }}</span>
+                        <div class="pdf-upload">
+                            <input type="file" class="form-control" id="upload-{{ lab.patient_labinvestigation_id }}" data-lab-id="{{ lab.patient_labinvestigation_id }}">
+                            <button class="btn btn-sm btn-success upload-btn mt-2" data-lab-id="{{ lab.patient_labinvestigation_id}}">Upload</button>
+                        </div>
+                    </div>
+                </div>
+            </div>  
+            
+            <div class="patient-info">
+                <div class="labaction-section">
+                    <select class="form-select form-select-sm labstatus-select" aria-label="Prescription Status">
+                        <option value="" disabled selected hidden>Select Status</option>
+                        <option value="1" {% if lab.patient_labtestreport_check == 1 %}selected{% endif %}>Sample Collected</option>
+                        <option value="2" {% if lab.patient_labtestreport_check == 2 %}selected{% endif %}>Report Uploaded</option>
+                        <option value="3" {% if lab.patient_labtestreport_check == 3 %}selected{% endif %}>Pysically Delivered</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary labchange-status-btn">Update</button>
+                </div> 
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="container mt-5">
+            <h1>No prescriptions Found</h1>
+        </div>
+    {% endif %}
+
+    <div class="container mt-5" id="filtermessage" style="display: none;">
+        <h1>No prescriptions Found for selected filter options</h1>
+    </div>
+</div>
+
+<script>
+    const fileInputs = document.querySelectorAll('.pdf-upload input[type="file"]');
+    const uploadButtons = document.querySelectorAll('.pdf-upload .upload-btn');
+
+    // Event listeners for file upload
+    fileInputs.forEach((input) => {
+        input.addEventListener('change', function(event) {
+            console.log('File selected:', event.target.files[0]);
+        });
+    });
+
+    uploadButtons.forEach((button) => {
+        button.addEventListener('click', function(event) {
+            const labId = button.getAttribute('data-lab-id');
+            const fileInput = document.querySelector(`#upload-${labId}`);
+            const selectedFile = fileInput.files[0];
+
+            if (selectedFile) {
+                // Prepare form data for the file upload
+                const formData = new FormData();
+                formData.append('file', selectedFile);  // Add file to FormData
+                formData.append('lab_id', labId);       // Include lab ID
+
+                // Send the file to the server using AJAX
+                fetch('{% url "upload_pdf" %}', {  // Django view URL
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'  // Add CSRF token for security
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('PDF uploaded successfully');
+                    } else {
+                        alert('Failed to upload PDF');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred during upload');
+                });
+            } else {
+                alert('Please select a file to upload.');
+            }
+        });
+    });
+</script>
+
+
+</body>
+</html>
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .labs-card {
+            background-color: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #71d4c895;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            position: relative;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            width: 100%; /* Ensure it takes full space within the container */
+        }
+
+        .labs-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .lab-test-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .pdf-upload {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pdf-upload input[type="file"] {
+            width: auto;
+            flex-grow: 1;
+        }
+
+        .pdf-upload button {
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .labaction-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        .pdf-icon {
+            font-size: 20px;
+            color: #007bff;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        .pdf-icon:hover {
+            color: #0056b3;
+        }
+
+        /* Responsive behavior for smaller screens */
+        @media (max-width: 768px) {
+            .lab-test-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .pdf-upload {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .pdf-upload input[type="file"], .pdf-upload button {
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="data-block1">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
+                <a class="navbar-brand1" href="{% url 'allpatient' %}"><i class="fas fa-arrow-left"></i><span class="navbar-brand1">All Labs</span></a>
+                <span class="doctor-count">Total: {{ labs|length }}</span>
+            </div>
+        </div>
+
+        {% if labs %} 
+            {% for lab in labs %}
+            <!-- <div class="labs-card">
+                
+                <div class="lab-section">
+                    <div class="lab-tests">
+                        <div class="lab-test-row">
+                            <span class="lab-test-name">{{ lab.labinvestigation_category }}</span>
+                            <div class="pdf-upload">
+                                <input type="file" class="form-control" id="upload-{{ lab.patient_labinvestigation_id }}" data-lab-id="{{ lab.patient_labinvestigation_id }}">
+                                <button class="btn btn-sm btn-success upload-btn mt-2" data-lab-id="{{ lab.patient_labinvestigation_id }}">Upload</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-info">
+                    <div class="labaction-section">
+                    <a href="http://127.0.0.1:8000/tatic/assets/img/{{lab.patient_labtestreport}}" target="_blank"><i class="fas fa-file-pdf pdf-icon"></i></a>
+                        <select class="form-select form-select-sm labstatus-select" aria-label="Prescription Status" data-lab-id="{{ lab.patient_labinvestigation_id }}">
+                            <option value="" disabled selected hidden>Select Status</option>
+                            <option value="1" {% if lab.patient_labtestreport_check == 1 %}selected{% endif %}>Sample Collected</option>
+                            <option value="2" {% if lab.patient_labtestreport_check == 2 %}selected{% endif %}>Report Uploaded</option>
+                            <option value="3" {% if lab.patient_labtestreport_check == 3 %}selected{% endif %}>Physically Delivered</option>
+                        </select>
+                        <button class="btn btn-sm btn-primary labchange-status-btn" data-lab-id="{{ lab.patient_labinvestigation_id }}">Update</button>
+                    </div>
+                </div>
+            </div> -->
+            <div class="labs-card">
+                <div class="lab-section">
+                    <div class="lab-tests">
+                        <div class="lab-test-row">
+                            <span class="lab-test-name">{{ lab.labinvestigation_category }}</span>
+                            <div class="pdf-upload">
+                                <input type="file" class="form-control" id="upload-{{ lab.patient_labinvestigation_id }}" data-lab-id="{{ lab.patient_labinvestigation_id }}">
+                                <button class="btn btn-sm btn-success upload-btn mt-2" data-lab-id="{{ lab.patient_labinvestigation_id }}">Upload</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="patient-info">
+                    <div class="labaction-section">
+                        <!-- Initially hide the PDF icon if no report is uploaded yet -->
+                        <a href="https://mahi-durg.app/DrishtiLaboratory/static/assets/img/{{lab.patient_labtestreport}}?t={{ timestamp }}" target="_blank" class="pdf-link"  data-labinvestigation-id="{{ lab.patient_labinvestigation_id }}" style="display: {% if lab.patient_labtestreport == 'Sample Report' %}none{% else %}block{% endif %};">
+                            <i class="fas fa-file-pdf pdf-icon"></i>
+                        </a>
+            
+                        <select class="form-select form-select-sm labstatus-select" aria-label="Prescription Status" data-lab-id="{{ lab.patient_labinvestigation_id }}">
+                            <option value="" disabled selected hidden>Select Status</option>
+                            <option value="1" {% if lab.patient_labtestreport_check == 1 %}selected{% endif %}>Sample Collected</option>
+                            <option value="2" {% if lab.patient_labtestreport_check == 2 %}selected{% endif %}>Report Uploaded</option>
+                            <option value="3" {% if lab.patient_labtestreport_check == 3 %}selected{% endif %}>Physically Delivered</option>
+                        </select>
+                        <button class="btn btn-sm btn-primary labchange-status-btn" data-lab-id="{{ lab.patient_labinvestigation_id }}">Update</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="container mt-5">
+                <h1>No prescriptions Found</h1>
+            </div>
+        {% endif %}
+
+        <div class="container mt-5" id="filtermessage" style="display: none;">
+            <h1>No prescriptions Found for selected filter options</h1>
+        </div>
+    </div>
+
+    <script>
+        const fileInputs = document.querySelectorAll('.pdf-upload input[type="file"]');
+        const uploadButtons = document.querySelectorAll('.pdf-upload .upload-btn');
+
+        // Event listeners for file upload
+        fileInputs.forEach((input) => {
+            input.addEventListener('change', function(event) {
+                console.log('File selected:', event.target.files[0]);
+            });
+        });
+
+        uploadButtons.forEach((button) => {
+            button.addEventListener('click', function(event) {
+                const labId = button.getAttribute('data-lab-id');
+                const fileInput = document.querySelector(`#upload-${labId}`);
+                const selectedFile = fileInput.files[0];
+
+                if (selectedFile) {
+                    const formData = new FormData();
+                    formData.append('file', selectedFile);
+                    formData.append('lab_id', labId);
+
+                    fetch('{% url "upload_pdf" %}', {  
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'  
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('PDF uploaded successfully');
+                            // Dynamically add PDF icon with the correct file path
+                            const pdfLink = document.querySelector(`.pdf-link[data-labinvestigation-id="${labId}"]`);
+                            if (pdfLink) {
+                                pdfLink.href = `https://mahi-durg.app/DrishtiLaboratory/static/assets/img/${labId}.pdf`;  // Fixed the URL typo
+                                pdfLink.style.display = 'block'; // Show the PDF icon after setting the href
+                            }
+                        } else {
+                            alert('Failed to upload PDF');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred during upload');
+                    });
+                } else {
+                    alert('Please select a file to upload.');
+                }
+            });
+        });
+
+        document.querySelectorAll('.labchange-status-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const labId = button.getAttribute('data-lab-id');
+                const statusSelect = document.querySelector(`select[data-lab-id="${labId}"]`);
+                const status = statusSelect.value;
+
+                if (status) {
+                    fetch('{% url "update_lab_status" %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            lab_id: labId,
+                            status: status
+                        })
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Status updated successfully');
+                            } else {
+                                alert('Failed to update status');
+                            }
+                        }).catch(error => {
+                            console.error('Status update error:', error);
+                            alert('An error occurred during status update');
+                        });
+                } else {
+                    alert('Please select a status.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratory Registration</title>
+    <link rel="shortcut icon" href="{% static 'assets/img/OPDLogo.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #008373;
+            color: white;
+          
+        }
+        .container {
+            max-width: 500px;
+            margin-top: 40px;
+        }
+        .form-group {
+            position: relative;
+            margin-bottom: 2.1rem;
+        }
+        .form-control:focus ~ label, 
+        .form-control:not(:placeholder-shown) ~ label {
+            top: -1.5rem;
+            left: 0.75rem;
+            font-size: 0.85rem;
+            color: #008373;
+        }
+        .form-control::placeholder {
+            color: transparent;
+        }
+        label {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            color: black;
+            transition: all 0.2s ease-in-out;
+            pointer-events: none;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            background-color:#008373;
+            border-color: #008373;
+            
+        }
+
+        input[type="text"], input[type="password"] {
+            color: black;
+        }
+
+        /* Full-page overlay */
+        .loader-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Loader (spinner) */
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Spin animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <span class="navbar-brand text-white" style="margin-left: 5px;" >Laboratory Registration</span>
+    </nav>
+    <!-- Loader (hidden initially) -->
+    <div id="loaderOverlay" class="loader-overlay" style="display: none;">
+        <div class="loader"></div>
+    </div>
+    <div class="container">
+        <form id="myForm" method="POST">
+            {%csrf_token%}
+            <div class="form-group">
+                <input type="text" class="form-control" id="laboratory_name" name="laboratory_name" placeholder=" " required>
+                <label for="laboratory_name">laboratory Name</label>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" id="laboratory_address" name="laboratory_address" placeholder=" " required>
+                <label for="laboratory_address">laboratory Address</label>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" id="laboratory_contact_number" name="laboratory_contact_number" placeholder=" " required pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number">
+                <label for="laboratory_contact_number">laboratory Contact Number</label>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" id="laboratory_owner_name" name="laboratory_owner_name" placeholder=" " required >
+                <label for="laboratory_owner_name">laboratory Owner Name</label>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" id="laboratory_owner_number" name="laboratory_owner_number" placeholder=" " required pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number">
+                <label for="laboratory_owner_number">Owner Contact Number</label>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" id="username" name="username" placeholder=" " required>
+                <label for="username">Username</label>
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="password" name="password" placeholder=" " required>
+                <label for="password">Password</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+</body>
+</html>
+<script>
+    // Handle form submission
+    $('#myForm').on('submit', function(e) {
+        $('.btn').prop('disabled', true); // Disable the save button
+        document.getElementById('loaderOverlay').style.display = 'flex';
+    });
+</script> 

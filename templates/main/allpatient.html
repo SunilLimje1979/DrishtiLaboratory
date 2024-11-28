@@ -1,0 +1,733 @@
+{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap" />
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-container {
+            width: 50%;  
+            padding: 1px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            max-height: 80vh;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .form-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .navbar-brand1 {
+            color: #FFFFFF;
+            font-size: 25px;
+        }
+
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            height: calc(100vh - 60px);
+        }
+
+        .search-bar {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .user-list {
+            width: 50%;
+            max-height: 100%;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .user-list::-webkit-scrollbar {
+            display: none;
+        }
+
+
+        .patient-card {
+            background-color: white;
+            padding: 10px; /* Increased padding for more space inside the card */
+            margin-bottom: 10px; /* Increased margin for better spacing between cards */
+            border-radius: 8px; /* Slightly more rounded corners */
+            border: 1px solid #71d4c895; /* Added a colored border */
+            
+            /* Enhanced shadow effect */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+            
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            
+            /* Add smooth hover effect */
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Add a hover effect to make the card pop */
+        .patient-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* More intense shadow on hover */
+            transform: translateY(-5px); /* Slight lift effect */
+        }
+
+        /* Optional: Adding a subtle background hover effect */
+        .patient-card:hover {
+            background-color: #fafafa;
+        }
+
+        .patient-info {
+            font-size: 16px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .patient-info p {
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+
+        .pdf-icon {
+            font-size: 24px;
+            color: #008373;
+            cursor: pointer;
+            margin-right: 10px; /* Adjust margin for spacing */
+        }
+
+        .action-section {
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Reduced gap for better alignment */
+            margin-left: auto; /* Push action section to the right */
+        }
+
+        .status-select {
+            width: 140px; /* Reduced width for dropdown */
+            padding: 4px; /* Adjust padding */
+        }
+
+        .change-status-btn {
+            font-size: 12px; /* Reduced button size */
+            padding: 3px 8px; /* Small button padding */
+        }
+
+         /* Filter Block */
+         .filter-block {
+            display: none;
+            padding: 10px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .filter-icon {
+            font-size: 20px;
+            color: black;
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+
+        /* Align the filter options in one row */
+        .filter-options {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        .filter-option {
+            flex: 1;
+        }
+
+        .multi-select-status {
+            height: 150px;
+            overflow-y: scroll;
+        }
+
+        /* Minimized version of the filter block */
+        .filter-block.collapsed {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+        }
+
+        /* Dropdown customization */
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .refresh-icon {
+            font-size: 24px;
+            color: #FF9632;
+            cursor: pointer;
+            margin-left: 20px;
+        }
+        .refresh-icon:hover {
+            color: #f37f12; /* Darker color on hover */
+        }
+
+        .data-block1 {
+            border: 1px solid #ddd;
+            padding: 7px;
+            margin-bottom: 5px;
+            background-color: #008373;
+            border-radius: 10px;
+        }
+        .doctor-count {
+            color: #FFFFFF;
+            font-size: 25px;
+        }
+
+    </style>
+</head>
+<body>
+<div class="flex-container">
+    <div class="user-list">
+        <div class="data-block1">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
+                <span class="navbar-brand1">Patients</span>
+                <span class="doctor-count">Total: {{ prescriptions|length }}</span>
+            </div>
+        </div>
+        {% if prescriptions %}
+            <div class="search-bar position-relative">
+                <input type="text" id="search-input" placeholder="Search patient by name or mobile number" class="form-control">
+                <i class="fas fa-filter filter-icon" title="Filter"></i> <!-- Filter Icon -->
+            </div>
+
+            <!-- Filter Block (Collapsed Initially) -->
+            <div class="filter-block" id="filter-block">
+                <div class="filter-options">
+                    <!-- Status Multi-Select Dropdown -->
+                    <div class="filter-option">
+                        <label for="status-select">Status</label>
+                        <select id="status-select" class="form-select">
+                            <option value="0" selected>All</option>
+                            <option value="1">Archive</option>
+                            <option value="2">Cancel</option>
+                            <option value="3">Reject</option>
+                            <option value="4">Expired</option>
+                        </select>
+                    </div>
+            
+                    <!-- Start Date -->
+                    <div class="filter-option">
+                        <label for="start-date">Start Date</label>
+                        <input type="date" id="start-date" class="form-control">
+                    </div>
+            
+                    <!-- End Date -->
+                    <div class="filter-option">
+                        <label for="end-date">End Date</label>
+                        <input type="date" id="end-date" class="form-control">
+                    </div>
+            
+                    <!-- Apply Filters Button in the same row -->
+                    <div class="filter-option d-flex align-items-end">
+                        <button id="apply-filters" class="btn btn-primary">Filter</button>
+                        <i class="fas fa-sync-alt refresh-icon mb-2" id="refresh-filters" title="Reset Filters"></i>
+                    </div>
+                    
+                    <!-- Refresh Icon  -->
+                    <!-- <div class="filter-option d-flex align-items-end">
+                        <i class="fas fa-sync-alt refresh-icon" id="refresh-filters" title="Reset Filters"></i>
+                    </div> -->
+                </div>
+            </div>  
+            
+        
+            {% for patient in prescriptions %}
+            <div class="patient-card" data-name="{{ patient.patient_details.patient_firstname }} {{ patient.patient_details.patient_lastname }}" data-mobile="{{ patient.patient_details.patient_mobileno }}" data-prescribelaboratory_id ="{{patient.prescribelaboratory_id}}" data-prescription_id ="{{patient.prescription_id}}">
+                
+                <div class="patient-info">
+                    <!-- PDF Icon placed before the patient details -->
+                    <!-- <i class="fas fa-file-pdf pdf-icon" data-consultation-id="{{ patient.consultation_id }}" data-patient-id="{{patient.patient_id}}" data-doctor-id="{{patient.doctor_id}}"></i> -->
+
+                    <p>{{ patient.patient_details.patient_firstname }} {{ patient.patient_details.patient_lastname }}</p>
+                    <p>{{ patient.patient_details.patient_mobileno }}</p>
+                    <p>
+                        {% if patient.patient_details.patient_gender == 0 %}
+                            Male
+                        {% else %}
+                            Female
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="action-section">
+                    <!-- Status Dropdown -->
+                    <select class="form-select form-select-sm status-select" aria-label="Prescription Status">
+                        <option value="" disabled selected hidden>Select Status</option>
+                        <option value="1" {% if patient.laboratory_status == 1 %}selected{% endif %}>Archive</option>
+                        <option value="2" {% if patient.laboratory_status == 2 %}selected{% endif %}>Cancel</option>
+                        <option value="3" {% if patient.laboratory_status == 3 %}selected{% endif %}>Reject</option>
+                        <option value="4" {% if patient.laboratory_status == 4 %}selected{% endif %}>Expired</option>
+                    </select>
+                    
+                    <!-- Change Button -->
+                    <button class="btn btn-sm btn-primary change-status-btn">Update</button>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="container mt-5">
+                <h1>No Patient Found</h1>
+            </div>
+        {% endif %}
+
+        <div class="container mt-5" id="filtermessage" style="display: none;">
+            <h1>No Pateint Found for selected filter options</h1>
+        </div>
+    </div>
+
+    <!-- Get patient Labs -->
+    <div class="form-container" id="getpatientdetails" style="display: none;">
+        <!-- Content will be loaded dynamically here -->
+    </div>
+</div>
+
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let activeCard = null; // Keep track of the active card
+    
+        // Function to fetch and display laboratory details for a patient
+        function handleCardClick() {
+            const prescription_id = this.getAttribute('data-prescription_id');
+            console.log(prescription_id);
+    
+            // Reset the background color of the previously active card
+            if (activeCard) {
+                activeCard.style.backgroundColor = '';
+            }
+    
+            // Highlight the selected card
+            this.style.backgroundColor = '#8af29b';
+            activeCard = this;
+    
+            // Fetch patient details using AJAX
+            fetch(`/DrishtiLaboratory/get_labs_under_patient/${prescription_id}`)
+                .then(response => response.text())
+                .then(html => {
+                    const patientDetails = document.getElementById('getpatientdetails');
+                    patientDetails.innerHTML = html;
+                    patientDetails.style.display = 'block';
+    
+                    // Reinitialize any scripts needed for the dynamically loaded content
+                    initializeLoadedContentScripts();
+                })
+                .catch(error => console.error('Error fetching patient details:', error));
+        }
+    
+        // Function to initialize dynamically loaded scripts
+        function initializeLoadedContentScripts() {
+            const loadedScripts = document.querySelectorAll('script');
+            loadedScripts.forEach(script => {
+                eval(script.innerText); // Evaluate and run the scripts from the newly loaded content
+            });
+        }
+    
+        // Attach click event listeners to patient cards
+        function attachCardClickListeners() {
+            const doctorCards = document.querySelectorAll('.patient-card');
+            doctorCards.forEach(card => {
+                card.addEventListener('click', handleCardClick);
+            });
+        }
+    
+        // Handle filter icon toggle
+        document.querySelector('.filter-icon').addEventListener('click', function() {
+            const filterBlock = document.querySelector('.filter-block');
+            filterBlock.style.display = filterBlock.style.display === 'block' ? 'none' : 'block';
+            filterBlock.style.opacity = '1'; // Ensure the block is visible when shown
+        });
+    
+        // Apply filters functionality
+        document.getElementById('apply-filters').addEventListener('click', function() {
+            const statusSelect = document.getElementById('status-select').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const doctorid = '{{doctor_id}}';
+            const noResultsMessage = document.getElementById('filtermessage');
+            noResultsMessage.style.display = 'none';
+    
+            console.log(statusSelect, startDate, endDate, doctorid);
+    
+            // AJAX call to apply filters
+            fetch("{% url 'filter_patients' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    status: statusSelect,
+                    start_date: startDate,
+                    end_date: endDate,
+                    doctorid: doctorid
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                updatePatientCards(data);
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    
+        // Function to update patient cards after filter
+        function updatePatientCards(data) {
+            const container = document.querySelector('.container');
+            const patientCards = document.querySelectorAll('.patient-card');
+            patientCards.forEach(card => card.remove());
+    
+            if (data.patients && data.patients.length > 0) {
+                data.patients.forEach(patient => {
+                    const patientCard = document.createElement('div');
+                    patientCard.classList.add('patient-card');
+                    patientCard.setAttribute('data-name', `${patient.patient_details.patient_firstname} ${patient.patient_details.patient_lastname}`);
+                    patientCard.setAttribute('data-mobile', patient.patient_details.patient_mobileno);
+                    patientCard.setAttribute('data-prescribepharmacist_id', patient.prescribelaboratory_id);
+    
+                    patientCard.innerHTML = `
+                        <div class="patient-info">
+                            <i class="fas fa-file-pdf pdf-icon" data-consultation-id="${patient.consultation_id}" data-patient-id="${patient.patient_id}" data-doctor-id="${patient.doctor_id}"></i>
+                            <p>${patient.patient_details.patient_firstname} ${patient.patient_details.patient_lastname}</p>
+                            <p>${patient.patient_details.patient_mobileno}</p>
+                            <p>${patient.patient_details.patient_gender == 0 ? 'Male' : 'Female'}</p>
+                        </div>
+                        <div class="action-section">
+                            <select class="form-select form-select-sm status-select" aria-label="Prescription Status">
+                                <option value="" disabled selected hidden>Select Status</option>
+                                <option value="1" ${patient.laboratory_status == 1 ? 'selected' : ''}>Archive</option>
+                                <option value="3" ${patient.laboratory_status == 2 ? 'selected' : ''}>Cancel</option>
+                                <option value="4" ${patient.laboratory_status == 3 ? 'selected' : ''}>Reject</option>
+                                <option value="5" ${patient.laboratory_status == 4 ? 'selected' : ''}>Expired</option>
+                            </select>
+                            <button class="btn btn-sm btn-primary change-status-btn">Update</button>
+                        </div>
+                    `;
+    
+                    container.appendChild(patientCard);
+                });
+    
+                // Reattach event listeners for new patient cards
+                attachCardClickListeners();
+            } else {
+                const noResultsMessage = document.getElementById('filtermessage');
+                noResultsMessage.style.display = 'block';
+            }
+        }
+    
+        // Handle search functionality
+        document.getElementById('search-input').addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.patient-card');
+    
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                const mobile = card.getAttribute('data-mobile').toLowerCase();
+    
+                if (name.includes(searchValue) || mobile.includes(searchValue)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    
+        // Handle status change functionality
+        function attachStatusChangeListeners() {
+            document.querySelectorAll('.change-status-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const card = this.closest('.patient-card');
+                    const prescribelaboratory_id = card.getAttribute('data-prescribepharmacist_id');
+                    const statusSelect = card.querySelector('.status-select');
+                    const status = statusSelect.value;
+    
+                    if (!status) {
+                        alert('Please select a status first.');
+                        return;
+                    }
+    
+                    // AJAX call to update status
+                    fetch("{% url 'update_laboratory_status' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            'status': status,
+                            'prescribelaboratory_id': prescribelaboratory_id
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message_text);
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
+        }
+    
+        // Attach filter refresh functionality
+        document.getElementById('refresh-filters').addEventListener('click', function() {
+            document.getElementById('status-select').value = '0'; // Reset Status
+            document.getElementById('start-date').value = '';     // Clear Start Date
+            document.getElementById('end-date').value = '';       // Clear End Date
+            window.location.reload(); // Reload to clear filters
+    
+            const noResultsMessage = document.getElementById('filtermessage');
+            noResultsMessage.style.display = 'none';
+        });
+    
+        // Attach event listeners on page load
+        attachCardClickListeners();
+        attachStatusChangeListeners();
+    });
+</script>     -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    let activeCard = null; // Keep track of the active card
+
+    // Function to fetch and display laboratory details for a patient
+    function handleCardClick(event) {
+        const prescription_id = this.getAttribute('data-prescription_id');
+        console.log(prescription_id);
+
+        // Reset the background color of the previously active card
+        if (activeCard) {
+            activeCard.style.backgroundColor = '';
+        }
+
+        // Highlight the selected card
+        this.style.backgroundColor = '#8af29b';
+        activeCard = this;
+
+        // Fetch patient details using AJAX
+        fetch(`/DrishtiLaboratory/get_labs_under_patient/${prescription_id}`)
+            .then(response => response.text())
+            .then(html => {
+                const patientDetails = document.getElementById('getpatientdetails');
+                patientDetails.innerHTML = html;
+                patientDetails.style.display = 'block';
+
+                // Reinitialize any scripts needed for the dynamically loaded content
+                initializeLoadedContentScripts();
+            })
+            .catch(error => console.error('Error fetching patient details:', error));
+    }
+
+    // Function to initialize dynamically loaded scripts
+    function initializeLoadedContentScripts() {
+        const loadedScripts = document.querySelectorAll('script');
+        loadedScripts.forEach(script => {
+            eval(script.innerText); // Evaluate and run the scripts from the newly loaded content
+        });
+    }
+
+    // Attach click event listeners to patient cards
+    function attachCardClickListeners() {
+        const doctorCards = document.querySelectorAll('.patient-card');
+        doctorCards.forEach(card => {
+            card.addEventListener('click', handleCardClick);
+        });
+    }
+
+    // Prevent event propagation for dropdown and update button clicks
+    function preventCardClickPropagation() {
+        const statusSelects = document.querySelectorAll('.status-select');
+        const updateButtons = document.querySelectorAll('.change-status-btn');
+
+        // Prevent the click event from propagating when interacting with the dropdown
+        statusSelects.forEach(select => {
+            select.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+
+        // Prevent the click event from propagating when clicking the update button
+        updateButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+    }
+
+    // Handle filter icon toggle
+    document.querySelector('.filter-icon').addEventListener('click', function() {
+        const filterBlock = document.querySelector('.filter-block');
+        filterBlock.style.display = filterBlock.style.display === 'block' ? 'none' : 'block';
+        filterBlock.style.opacity = '1'; // Ensure the block is visible when shown
+    });
+
+    // Apply filters functionality
+    document.getElementById('apply-filters').addEventListener('click', function() {
+        const statusSelect = document.getElementById('status-select').value;
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+        // const doctorid = '{{doctor_id}}';
+        const noResultsMessage = document.getElementById('filtermessage');
+        noResultsMessage.style.display = 'none';
+
+        console.log(statusSelect, startDate, endDate);
+
+        // AJAX call to apply filters
+        fetch("{% url 'filter_patients' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                status: statusSelect,
+                start_date: startDate,
+                end_date: endDate,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            updatePatientCards(data);
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    // Function to update patient cards after filter
+    function updatePatientCards(data) {
+        const container = document.querySelector('.user-list');
+        const patientCards = document.querySelectorAll('.patient-card');
+        patientCards.forEach(card => card.remove());
+        console.log(data);
+        if (data.patients && data.patients.length > 0) {
+            data.patients.forEach(patient => {
+                const patientCard = document.createElement('div');
+                patientCard.classList.add('patient-card');
+                patientCard.setAttribute('data-name', `${patient.patient_details.patient_firstname} ${patient.patient_details.patient_lastname}`);
+                patientCard.setAttribute('data-mobile', patient.patient_details.patient_mobileno);
+                patientCard.setAttribute('data-prescribelaboratory_id', patient.prescribelaboratory_id);
+                patientCard.setAttribute('data-prescription_id', patient.prescription_id);
+
+                patientCard.innerHTML = `
+                    <div class="patient-info">
+                        <p>${patient.patient_details.patient_firstname} ${patient.patient_details.patient_lastname}</p>
+                        <p>${patient.patient_details.patient_mobileno}</p>
+                        <p>${patient.patient_details.patient_gender == 0 ? 'Male' : 'Female'}</p>
+                    </div>
+                    <div class="action-section">
+                        <select class="form-select form-select-sm status-select" aria-label="Prescription Status">
+                            <option value="" disabled selected hidden>Select Status</option>
+                            <option value="1" ${patient.laboratory_status == 1 ? 'selected' : ''}>Archive</option>
+                            <option value="2" ${patient.laboratory_status == 2 ? 'selected' : ''}>Cancel</option>
+                            <option value="3" ${patient.laboratory_status == 3 ? 'selected' : ''}>Reject</option>
+                            <option value="4" ${patient.laboratory_status == 4 ? 'selected' : ''}>Expired</option>
+                        </select>
+                        <button class="btn btn-sm btn-primary change-status-btn">Update</button>
+                    </div>
+                `;
+
+                container.appendChild(patientCard);
+            });
+
+            // Reattach event listeners for new patient cards
+            attachCardClickListeners();
+            preventCardClickPropagation();
+            attachStatusChangeListeners();
+        } else {
+            const noResultsMessage = document.getElementById('filtermessage');
+            noResultsMessage.style.display = 'block';
+        }
+    }
+
+    // Handle search functionality
+    document.getElementById('search-input').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.patient-card');
+
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name').toLowerCase();
+            const mobile = card.getAttribute('data-mobile').toLowerCase();
+
+            if (name.includes(searchValue) || mobile.includes(searchValue)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
+    // Handle status change functionality
+    function attachStatusChangeListeners() {
+        document.querySelectorAll('.change-status-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const card = this.closest('.patient-card');
+                const prescribelaboratory_id = card.getAttribute('data-prescribelaboratory_id');
+                const statusSelect = card.querySelector('.status-select');
+                const status = statusSelect.value;
+
+                if (!status) {
+                    alert('Please select a status first.');
+                    return;
+                }
+
+                // AJAX call to update status
+                fetch("{% url 'update_laboratory_status' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        'status': status,
+                        'prescribelaboratory_id': prescribelaboratory_id
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message_text);
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    }
+
+    // Attach filter refresh functionality
+    document.getElementById('refresh-filters').addEventListener('click', function() {
+        document.getElementById('status-select').value = '0'; // Reset Status
+        document.getElementById('start-date').value = '';     // Clear Start Date
+        document.getElementById('end-date').value = '';       // Clear End Date
+
+        const noResultsMessage = document.getElementById('filtermessage');
+        noResultsMessage.style.display = 'none';
+    });
+
+    // Attach event listeners on page load
+    attachCardClickListeners();
+    attachStatusChangeListeners();
+    preventCardClickPropagation();
+});
+
+</script>
+
+</body>
+</html>
+{% endblock content %}
